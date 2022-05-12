@@ -5,12 +5,18 @@ const { generateJWT } = require('../helpers/jwt');
 
 const getUsers = async(req, res) => {
 
-    const users = await User.find({}, 'name email role google img')
+    const from = Number(req.query.from) || 0;
+    const to = Number(req.query.to);
 
-    res.json({
+    const [users, total] = await Promise.all([
+        User.find({}, 'name email role google').skip(from).limit(to + 1),
+        User.count(),
+    ])
+
+    return res.json({
         ok: true, 
         users,
-        uid: req.uid
+        total
     });
 }
 
@@ -41,7 +47,7 @@ const createUser = async(req, res = response) => {
         //Generar y devolver token
         const token = await generateJWT(user.id);
     
-        res.json({
+        return res.json({
             ok: true, 
             user,
             token
@@ -49,7 +55,7 @@ const createUser = async(req, res = response) => {
         
     } catch (error) {
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             msg: 'Unexpected error...check logs'
         });
@@ -90,14 +96,14 @@ const updateUser = async(req, res = response) => {
         const updatedUser = await User.findByIdAndUpdate(uid, campos, { new: true });
 
 
-        res.json({
+        return res.json({
             ok: true,
             updatedUser
         })
         
     } catch (error) {
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             msg: 'Unexpected error...check logs'
         });
@@ -121,14 +127,14 @@ const deleteUser = async(req, res = response) => {
         
        await User.findByIdAndRemove(uid);
 
-        res.json({
+       return res.json({
             ok: true,
             msg: 'User deleted successfully'
         })
         
     } catch (error) {
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             msg: 'Unexpected error...check logs'
         });

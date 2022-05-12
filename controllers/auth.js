@@ -32,7 +32,7 @@ const login = async(req, res = response) => {
         //Generar el TOKEN - JWT
         const token = await generateJWT(userDB.id);
 
-        res.json({
+        return res.json({
             ok: true,
             token
         });
@@ -40,7 +40,7 @@ const login = async(req, res = response) => {
         
     } catch (error) {
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             msg: 'Unexpected error...check logs'
         });
